@@ -42,4 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
       addTodo();
     }
   });
+
+  function loadTodos() {
+    const savedTodos = JSON.parse(localStorage.getItem("todos")) || []; 
+  }
 });
