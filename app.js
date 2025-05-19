@@ -1,3 +1,9 @@
+ /**
+  * @file app.js
+  * @description Implements the core functionality of a simple to-do list application.
+  * Handles adding, deleting, and marking tasks as completed via DOM manipulation.
+  */
+
 document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
   const addTodoButton = document.getElementById("add-todo");
