@@ -1,4 +1,4 @@
- /**
+/**
   * @file app.js
   * @description Implements the core functionality of a simple to-do list application.
   * Handles adding, deleting, and marking tasks as completed via DOM manipulation.
@@ -9,6 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const addTodoButton = document.getElementById("add-todo");
   const todoList = document.getElementById("todo-list");
 
+  /**
+   * Adds a new to-do item to the list and updates persistent storage.
+   *
+   * If the input field is empty, displays an alert and does not add a task. The new task is appended to the list with a delete button and supports toggling its completion status. Updates are saved to {@link localStorage}.
+   */
   function addTodo() {
     const todoText = todoInput.value.trim();
     if (todoText === "") {
@@ -41,6 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
     saveTodos(); // Call saveTodos after adding a new task
   }
 
+  /**
+   * Saves the current list of tasks and their completion status to localStorage.
+   *
+   * Each task is stored as an object with `text` and `completed` properties in a JSON array under the key "todos".
+   */
   function saveTodos() {
     const taskItems = todoList.querySelectorAll("li");
     const todos = [];
@@ -60,6 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /**
+   * Loads saved to-do tasks from localStorage and populates the to-do list in the DOM.
+   *
+   * Reconstructs each task with its completion status and attaches event handlers for deleting and toggling completion.
+   */
   function loadTodos() {
     const savedTodos = JSON.parse(localStorage.getItem("todos")) || [];
     todoList.innerHTML = ''; // Clear existing tasks
