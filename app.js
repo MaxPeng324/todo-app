@@ -1,3 +1,10 @@
+/*
+ * @Author: Mx.Peng
+ * @Date: 2025-05-19 14:43:53
+ * @LastEditors: Mx.Peng
+ * @LastEditTime: 2025-06-05 09:44:21
+ * @Description: 
+ */
  /**
   * @file app.js
   * @description Implements the core functionality of a simple to-do list application.
@@ -10,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoList = document.getElementById("todo-list");
 
   function addTodo() {
-    const todoText = todoInput.value.trim();
+    const todoText = todoInput.value.tri();
     if (todoText === "") {
       alert("请输入待办事项");
       return;
