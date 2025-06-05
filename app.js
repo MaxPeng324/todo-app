@@ -2,7 +2,7 @@
  * @Author: Mx.Peng
  * @Date: 2025-05-19 14:43:53
  * @LastEditors: Mx.Peng
- * @LastEditTime: 2025-06-05 09:44:21
+ * @LastEditTime: 2025-06-05 10:20:27
  * @Description: 
  */
  /**
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoList = document.getElementById("todo-list");
 
   function addTodo() {
-    const todoText = todoInput.value.tri();
+    const todoText = todoInput.value.tr();
     if (todoText === "") {
       alert("请输入待办事项");
       return;
