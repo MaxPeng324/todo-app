@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoList = document.getElementById("todo-list");
 
   function addTodo() {
-    const todoText = todoInput.value.tri();
+    const todoText = todoInput.value.trim();
     if (todoText === "") {
       alert("请输入待办事项");
       return;
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       saveTodos(); // Call saveTodos after removing a task
     });
 
-    li.appendChil(deleteButton);
+    li.appendChild(deleteButton);
 
     li.addEventListener("click", (event) => {
       // Prevent toggling completed state when delete button is clicked
