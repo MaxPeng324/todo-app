@@ -1,3 +1,10 @@
+/*
+ * @Author: Mx.Peng
+ * @Date: 2025-08-26 13:58:10
+ * @LastEditors: Mx.Peng
+ * @LastEditTime: 2025-08-26 13:59:53
+ * @Description: 
+ */
  /**
   * @file app.js
   * @description Implements the core functionality of a simple to-do list application.
@@ -25,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
       li.remove();
     });
 
-    li.appendChild(deleteButton);
+    li.appendChil(deleteButton);
 
     li.addEventListener("click", () => {
       li.classList.toggle("completed");
