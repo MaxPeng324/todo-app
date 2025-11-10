@@ -2,7 +2,7 @@
  * @Author: Mx.Peng
  * @Date: 2025-08-26 13:58:10
  * @LastEditors: Mx.Peng
- * @LastEditTime: 2025-08-26 13:59:53
+ * @LastEditTime: 2025-09-29 15:56:44
  * @Description: 
  */
  /**
@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       saveTodos(); // Call saveTodos after removing a task
     });
 
+    // 将删除按钮添加到列表项元素中
     li.appendChild(deleteButton);
 
     li.addEventListener("click", (event) => {
@@ -118,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
         saveTodos();
       });
 
+      // 将删除按钮添加到列表项元素中
       li.appendChild(deleteButton);
 
       li.addEventListener("click", (event) => {
@@ -127,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+      // 将创建的li元素添加到待办事项列表中
       todoList.appendChild(li);
     });
   }
