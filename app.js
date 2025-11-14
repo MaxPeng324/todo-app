@@ -14,6 +14,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
   const addTodoButton = document.getElementById("add-todo");
+  const clearAllButton = document.getElementById("clear-all");
   const todoList = document.getElementById("todo-list");
 
   /**
@@ -88,6 +89,29 @@ document.addEventListener("DOMContentLoaded", () => {
       addTodo();
     }
   });
+
+  /**
+   * 清除所有待办事项
+   * @function clearAllTodos
+   * @description 清空待办事项列表的所有任务，并清除localStorage中的数据
+   * @returns {void}
+   * @example
+   * // 当用户点击清除所有按钮时调用
+   * clearAllTodos();
+   */
+  function clearAllTodos() {
+    if (todoList.children.length === 0) {
+      alert("当前没有任务需要清除");
+      return;
+    }
+
+    if (confirm("确定要清除所有待办事项吗？")) {
+      todoList.innerHTML = "";
+      localStorage.removeItem("todos");
+    }
+  }
+
+  clearAllButton.addEventListener("click", clearAllTodos);
 
   /**
    * 从浏览器本地存储加载并显示待办事项列表
