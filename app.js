@@ -2,29 +2,30 @@
  * @Author: Mx.Peng
  * @Date: 2025-08-26 13:58:10
  * @LastEditors: Mx.Peng
- * @LastEditTime: 2025-09-29 15:56:44
- * @Description: 
+ * @LastEditTime: 2026-01-11 09:30:00
+ * @Description: Enhanced TodoList with filter, edit, and counter functionality
  */
- /**
-  * @file app.js
-  * @description Implements the core functionality of a simple to-do list application.
-  * Handles adding, deleting, and marking tasks as completed via DOM manipulation.
-  */
+
+/**
+ * @file app.js
+ * @description Enhanced to-do list application with filtering, editing, task counter,
+ * and improved user experience with animations.
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
   const addTodoButton = document.getElementById("add-todo");
+  const clearAllButton = document.getElementById("clear-all");
+  const clearCompletedButton = document.getElementById("clear-completed");
   const todoList = document.getElementById("todo-list");
+  const taskCountEl = document.getElementById("task-count");
+  const filterButtons = document.querySelectorAll(".filter-btn");
+
+  let currentFilter = "all";
 
   /**
    * 添加新的待办事项到列表中
    * @function addTodo
-   * @description 从输入框获取待办事项文本，创建新的列表项元素，
-   * 添加删除按钮和完成状态切换功能，最后将项目添加到DOM并保存到localStorage
-   * @returns {void}
-   * @example
-   * // 当用户点击添加按钮或按Enter键时调用
-   * addTodo();
    */
   function addTodo() {
     const todoText = todoInput.value.trim();
@@ -33,54 +34,232 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const li = document.createElement("li");
-    li.textContent = todoText;
-    li.dataset.taskText = todoText; // Store the original task text
+    createTodoElement(todoText, false);
+    todoInput.value = "";
+    saveTodos();
+    updateTaskCounter();
+    applyFilter();
+  }
 
+  /**
+   * 创建待办事项DOM元素
+   * @param {string} text - 待办事项文本
+   * @param {boolean} completed - 是否完成
+   */
+  function createTodoElement(text, completed = false) {
+    const li = document.createElement("li");
+    li.dataset.taskText = text;
+    if (completed) {
+      li.classList.add("completed");
+    }
+
+    // 创建内容区域
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "todo-content";
+    contentDiv.textContent = text;
+    li.appendChild(contentDiv);
+
+    // 创建编辑输入框（隐藏状态）
+    const editInput = document.createElement("input");
+    editInput.type = "text";
+    editInput.className = "edit-input";
+    editInput.value = text;
+    li.appendChild(editInput);
+
+    // 创建按钮容器
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.className = "todo-buttons";
+
+    // 编辑按钮
+    const editButton = document.createElement("button");
+    editButton.textContent = "编辑";
+    editButton.className = "edit-btn";
+    editButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      enterEditMode(li, editInput);
+    });
+    buttonsDiv.appendChild(editButton);
+
+    // 删除按钮
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "删除";
-    deleteButton.addEventListener("click", () => {
+    deleteButton.addEventListener("click", (e) => {
+      e.stopPropagation();
       li.remove();
-      saveTodos(); // Call saveTodos after removing a task
+      saveTodos();
+      updateTaskCounter();
+      applyFilter();
     });
+    buttonsDiv.appendChild(deleteButton);
 
-    // 将删除按钮添加到列表项元素中
-    li.appendChild(deleteButton);
+    li.appendChild(buttonsDiv);
 
-    li.addEventListener("click", (event) => {
-      // Prevent toggling completed state when delete button is clicked
-      if (event.target !== deleteButton) {
+    // 创建编辑操作按钮（隐藏状态）
+    const editActionsDiv = document.createElement("div");
+    editActionsDiv.className = "edit-actions";
+
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "保存";
+    saveButton.className = "save-btn";
+    saveButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      saveEdit(li, editInput, contentDiv);
+    });
+    editActionsDiv.appendChild(saveButton);
+
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "取消";
+    cancelButton.className = "cancel-btn";
+    cancelButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      cancelEdit(li, editInput);
+    });
+    editActionsDiv.appendChild(cancelButton);
+
+    li.appendChild(editActionsDiv);
+
+    // 点击切换完成状态（不在编辑模式时）
+    contentDiv.addEventListener("click", () => {
+      if (!li.classList.contains("editing")) {
         li.classList.toggle("completed");
-        saveTodos(); // Call saveTodos after toggling completion
+        saveTodos();
+        updateTaskCounter();
+        applyFilter();
       }
     });
 
     todoList.appendChild(li);
-    todoInput.value = "";
-    saveTodos(); // Call saveTodos after adding a new task
   }
 
   /**
-   * 将当前待办事项列表保存到浏览器本地存储
-   * @function saveTodos
-   * @description 遍历DOM中的所有待办事项，提取文本内容和完成状态，
-   * 将数据序列化为JSON格式并存储到localStorage中，用于页面刷新后的数据持久化
-   * @returns {void}
-   * @example
-   * // 在添加、删除或更改任务状态后自动调用
-   * saveTodos();
+   * 进入编辑模式
+   */
+  function enterEditMode(li, editInput) {
+    li.classList.add("editing");
+    editInput.focus();
+    editInput.select();
+  }
+
+  /**
+   * 保存编辑
+   */
+  function saveEdit(li, editInput, contentDiv) {
+    const newText = editInput.value.trim();
+    if (newText === "") {
+      alert("待办事项不能为空");
+      return;
+    }
+
+    li.dataset.taskText = newText;
+    contentDiv.textContent = newText;
+    editInput.value = newText;
+    li.classList.remove("editing");
+    saveTodos();
+  }
+
+  /**
+   * 取消编辑
+   */
+  function cancelEdit(li, editInput) {
+    editInput.value = li.dataset.taskText;
+    li.classList.remove("editing");
+  }
+
+  /**
+   * 更新任务计数器
+   */
+  function updateTaskCounter() {
+    const allTasks = todoList.querySelectorAll("li");
+    const activeTasks = Array.from(allTasks).filter(
+      (task) => !task.classList.contains("completed")
+    );
+    const completedTasks = allTasks.length - activeTasks.length;
+
+    taskCountEl.textContent = `共 ${allTasks.length} 个任务 (进行中: ${activeTasks.length}, 已完成: ${completedTasks})`;
+  }
+
+  /**
+   * 应用过滤器
+   */
+  function applyFilter() {
+    const allTasks = todoList.querySelectorAll("li");
+
+    allTasks.forEach((task) => {
+      task.classList.remove("hidden");
+
+      if (currentFilter === "active" && task.classList.contains("completed")) {
+        task.classList.add("hidden");
+      } else if (currentFilter === "completed" && !task.classList.contains("completed")) {
+        task.classList.add("hidden");
+      }
+    });
+  }
+
+  /**
+   * 保存待办事项到本地存储
    */
   function saveTodos() {
     const taskItems = todoList.querySelectorAll("li");
     const todos = [];
-    taskItems.forEach(item => {
-      const taskText = item.dataset.taskText || item.firstChild.textContent.trim(); // Use stored task text or fallback
+    taskItems.forEach((item) => {
+      const taskText = item.dataset.taskText;
       const isCompleted = item.classList.contains("completed");
       todos.push({ text: taskText, completed: isCompleted });
     });
     localStorage.setItem("todos", JSON.stringify(todos));
   }
 
+  /**
+   * 从本地存储加载待办事项
+   */
+  function loadTodos() {
+    const savedTodos = JSON.parse(localStorage.getItem("todos")) || [];
+    todoList.innerHTML = "";
+
+    savedTodos.forEach((taskObject) => {
+      createTodoElement(taskObject.text, taskObject.completed);
+    });
+
+    updateTaskCounter();
+    applyFilter();
+  }
+
+  /**
+   * 清除所有待办事项
+   */
+  function clearAllTodos() {
+    if (todoList.children.length === 0) {
+      alert("当前没有任务需要清除");
+      return;
+    }
+
+    if (confirm("确定要清除所有待办事项吗？")) {
+      todoList.innerHTML = "";
+      localStorage.removeItem("todos");
+      updateTaskCounter();
+    }
+  }
+
+  /**
+   * 清除已完成的待办事项
+   */
+  function clearCompletedTodos() {
+    const completedTasks = todoList.querySelectorAll("li.completed");
+
+    if (completedTasks.length === 0) {
+      alert("当前没有已完成的任务");
+      return;
+    }
+
+    if (confirm(`确定要清除 ${completedTasks.length} 个已完成的待办事项吗？`)) {
+      completedTasks.forEach((task) => task.remove());
+      saveTodos();
+      updateTaskCounter();
+      applyFilter();
+    }
+  }
+
+  // 事件监听器
   addTodoButton.addEventListener("click", addTodo);
 
   todoInput.addEventListener("keypress", (e) => {
@@ -89,51 +268,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /**
-   * 从浏览器本地存储加载并显示待办事项列表
-   * @function loadTodos
-   * @description 从localStorage读取保存的待办事项数据，清空当前DOM列表，
-   * 重新创建每个待办事项的DOM元素，包括文本内容、完成状态、删除按钮和事件监听器
-   * @returns {void}
-   * @example
-   * // 页面加载完成后自动调用以恢复之前的待办事项
-   * loadTodos();
-   */
-  function loadTodos() {
-    const savedTodos = JSON.parse(localStorage.getItem("todos")) || [];
-    todoList.innerHTML = ''; // Clear existing tasks
+  clearAllButton.addEventListener("click", clearAllTodos);
+  clearCompletedButton.addEventListener("click", clearCompletedTodos);
 
-    savedTodos.forEach(taskObject => {
-      const li = document.createElement("li");
-      li.textContent = taskObject.text; // Use taskObject.text
-      li.dataset.taskText = taskObject.text; // Store the original task text
-
-      if (taskObject.completed) {
-        li.classList.add("completed"); // Apply completed class if true
-      }
-
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "删除";
-      deleteButton.addEventListener("click", () => {
-        li.remove();
-        saveTodos();
-      });
-
-      // 将删除按钮添加到列表项元素中
-      li.appendChild(deleteButton);
-
-      li.addEventListener("click", (event) => {
-        if (event.target !== deleteButton) {
-          li.classList.toggle("completed");
-          saveTodos();
-        }
-      });
-
-      // 将创建的li元素添加到待办事项列表中
-      todoList.appendChild(li);
+  // 过滤按钮事件
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      // 移除所有active类
+      filterButtons.forEach((btn) => btn.classList.remove("active"));
+      // 添加active类到当前按钮
+      button.classList.add("active");
+      // 设置当前过滤器
+      currentFilter = button.dataset.filter;
+      // 应用过滤
+      applyFilter();
     });
-  }
+  });
 
-  // Call loadTodos when the DOM is fully loaded
+  // 页面加载时初始化
   loadTodos();
 });

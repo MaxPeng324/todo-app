@@ -9,9 +9,23 @@
   <body>
     <div class="container">
       <h1>待办事项</h1>
-      <input type="text" id="todo-input" placeholder="添加待办事项" />
-      <button id="add-todo">添加</button>
+      <div class="input-group">
+        <input type="text" id="todo-input" placeholder="添加待办事项" />
+        <button id="add-todo">添加</button>
+      </div>
+      <div class="task-counter">
+        <span id="task-count">0 个任务</span>
+      </div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">全部</button>
+        <button class="filter-btn" data-filter="active">进行中</button>
+        <button class="filter-btn" data-filter="completed">已完成</button>
+      </div>
       <ul id="todo-list"></ul>
+      <div class="action-buttons">
+        <button id="clear-completed">清除已完成</button>
+        <button id="clear-all">清除所有</button>
+      </div>
     </div>
     <script src="app.js"></script>
   </body>
