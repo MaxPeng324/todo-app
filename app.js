@@ -24,8 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentFilter = "all";
 
   /**
-   * 添加新的待办事项到列表中
+   * 从输入框获取文本并添加新的待办事项。
+   * 包含空值检查、DOM创建调用、本地存储同步和UI更新。
    * @function addTodo
+   * @returns {void}
    */
   function addTodo() {
     const todoText = todoInput.value.trim();
@@ -42,9 +44,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 创建待办事项DOM元素
-   * @param {string} text - 待办事项文本
-   * @param {boolean} completed - 是否完成
+   * 动态创建待办事项的DOM结构。
+   * 包含文本内容、编辑输入框、编辑/删除按钮以及相关事件绑定。
+   * @function createTodoElement
+   * @param {string} text - 待办事项的具体显示文本
+   * @param {boolean} [completed=false] - 初始状态是否为已完成
+   * @returns {void}
    */
   function createTodoElement(text, completed = false) {
     const li = document.createElement("li");
@@ -132,7 +137,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 进入编辑模式
+   * 切换指定任务项进入编辑模式。
+   * 显示输入框，隐藏静态文本，并自动聚焦到输入框中。
+   * @function enterEditMode
+   * @param {HTMLElement} li - 目标列表项元素
+   * @param {HTMLInputElement} editInput - 该项关联的编辑输入框元素
+   * @returns {void}
    */
   function enterEditMode(li, editInput) {
     li.classList.add("editing");
@@ -141,7 +151,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 保存编辑
+   * 保存编辑后的文本并退出编辑模式。
+   * 包含空值校验，校验通过后同步更新DOM文本和数据集。
+   * @function saveEdit
+   * @param {HTMLElement} li - 目标列表项元素
+   * @param {HTMLInputElement} editInput - 编辑输入框元素
+   * @param {HTMLElement} contentDiv - 显示任务内容的容器元素
+   * @returns {void}
    */
   function saveEdit(li, editInput, contentDiv) {
     const newText = editInput.value.trim();
@@ -158,7 +174,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 取消编辑
+   * 放弃编辑并恢复之前的任务文本。
+   * 退出编辑模式并还原输入框的值。
+   * @function cancelEdit
+   * @param {HTMLElement} li - 目标列表项元素
+   * @param {HTMLInputElement} editInput - 编辑输入框元素
+   * @returns {void}
    */
   function cancelEdit(li, editInput) {
     editInput.value = li.dataset.taskText;
@@ -166,7 +187,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 更新任务计数器
+   * 重新统计并更新界面上的任务状态计数器。
+   * 计算总数、进行中数量和已完成数量，并格式化显示文本。
+   * @function updateTaskCounter
+   * @returns {void}
    */
   function updateTaskCounter() {
     const allTasks = todoList.querySelectorAll("li");
@@ -179,7 +203,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 应用过滤器
+   * 根据当前选中的过滤器（全部、进行中、已完成）显示或隐藏任务项。
+   * 通过操作 CSS 类名 'hidden' 来控制元素的可见性。
+   * @function applyFilter
+   * @returns {void}
    */
   function applyFilter() {
     const allTasks = todoList.querySelectorAll("li");
@@ -196,7 +223,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 保存待办事项到本地存储
+   * 将当前列表中的所有待办事项序列化并持久化到本地存储（localStorage）。
+   * 存储的数据格式为对象数组：[{text: string, completed: boolean}]。
+   * @function saveTodos
+   * @returns {void}
    */
   function saveTodos() {
     const taskItems = todoList.querySelectorAll("li");
@@ -210,7 +240,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 从本地存储加载待办事项
+   * 从本地存储（localStorage）读取并解析已保存的任务数据。
+   * 首次加载时重建任务 DOM 树并同步更新计数器与过滤器。
+   * @function loadTodos
+   * @returns {void}
    */
   function loadTodos() {
     const savedTodos = JSON.parse(localStorage.getItem("todos")) || [];
@@ -225,7 +258,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 清除所有待办事项
+   * 清空所有待办事项列表。
+   * 包含操作确认提示，并在清除后同步移除本地存储数据及更新 UI。
+   * @function clearAllTodos
+   * @returns {void}
    */
   function clearAllTodos() {
     if (todoList.children.length === 0) {
@@ -241,7 +277,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 清除已完成的待办事项
+   * 仅删除状态为已完成的任务项。
+   * 包含操作确认提示，删除后同步更新本地存储并重新应用当前过滤器。
+   * @function clearCompletedTodos
+   * @returns {void}
    */
   function clearCompletedTodos() {
     const completedTasks = todoList.querySelectorAll("li.completed");
