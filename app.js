@@ -24,6 +24,22 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentFilter = "all";
 
   /**
+   * 格式化时间显示
+   * @function formatTime
+   * @param {string} isoString - ISO格式的时间字符串
+   * @returns {string} 格式化后的时间字符串
+   */
+  function formatTime(isoString) {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }
+
+  /**
    * 从输入框获取文本并添加新的待办事项。
    * 包含空值检查、DOM创建调用、本地存储同步和UI更新。
    * @function addTodo
@@ -36,7 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    createTodoElement(todoText, false);
+    const createdAt = new Date().toISOString();
+    createTodoElement(todoText, false, createdAt);
     todoInput.value = "";
     saveTodos();
     updateTaskCounter();
@@ -49,11 +66,15 @@ document.addEventListener("DOMContentLoaded", () => {
    * @function createTodoElement
    * @param {string} text - 待办事项的具体显示文本
    * @param {boolean} [completed=false] - 初始状态是否为已完成
+   * @param {string} [createdAt] - 任务创建时间（ISO格式）
    * @returns {void}
    */
-  function createTodoElement(text, completed = false) {
+  function createTodoElement(text, completed = false, createdAt = null) {
     const li = document.createElement("li");
     li.dataset.taskText = text;
+    if (createdAt) {
+      li.dataset.createdAt = createdAt;
+    }
     if (completed) {
       li.classList.add("completed");
     }
@@ -63,6 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
     contentDiv.className = "todo-content";
     contentDiv.textContent = text;
     li.appendChild(contentDiv);
+
+    // 创建创建时间显示
+    if (createdAt) {
+      const timeDiv = document.createElement("div");
+      timeDiv.className = "todo-time";
+      timeDiv.textContent = formatTime(createdAt);
+      li.appendChild(timeDiv);
+    }
 
     // 创建编辑输入框（隐藏状态）
     const editInput = document.createElement("input");
@@ -224,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * 将当前列表中的所有待办事项序列化并持久化到本地存储（localStorage）。
-   * 存储的数据格式为对象数组：[{text: string, completed: boolean}]。
+   * 存储的数据格式为对象数组：[{text: string, completed: boolean, createdAt: string}]。
    * @function saveTodos
    * @returns {void}
    */
@@ -234,7 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
     taskItems.forEach((item) => {
       const taskText = item.dataset.taskText;
       const isCompleted = item.classList.contains("completed");
-      todos.push({ text: taskText, completed: isCompleted });
+      const createdAt = item.dataset.createdAt || null;
+      todos.push({ text: taskText, completed: isCompleted, createdAt: createdAt });
     });
     localStorage.setItem("todos", JSON.stringify(todos));
   }
@@ -250,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     todoList.innerHTML = "";
 
     savedTodos.forEach((taskObject) => {
-      createTodoElement(taskObject.text, taskObject.completed);
+      createTodoElement(taskObject.text, taskObject.completed, taskObject.createdAt);
     });
 
     updateTaskCounter();
