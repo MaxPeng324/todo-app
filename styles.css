@@ -185,13 +185,19 @@ li {
   margin-bottom: 12px;
   border-radius: 12px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.8);
   transition: all 0.2s ease;
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.todo-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 @keyframes slideIn {
@@ -228,6 +234,15 @@ li.hidden {
   cursor: pointer;
   line-height: 1.5;
   font-weight: 500;
+}
+
+.completed-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-left: 0;
+  font-style: italic;
+  opacity: 0.8;
 }
 
 .todo-buttons {
@@ -311,7 +326,8 @@ li.editing {
 }
 
 li.editing .todo-content,
-li.editing .todo-buttons {
+li.editing .todo-buttons,
+li.editing .completed-time {
   display: none;
 }
 
