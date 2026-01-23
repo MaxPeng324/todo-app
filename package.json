@@ -1,0 +1,21 @@
+{
+  "name": "19fe-install-and-inte",
+  "version": "1.0.0",
+  "description": "一个功能丰富、界面美观的待办事项管理应用,采用原生 JavaScript 开发。",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "vibe-kanban-web-companion": "^0.0.5",
+    "vite": "^7.3.1"
+  }
+}

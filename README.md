@@ -61,7 +61,34 @@
 
 ## 本地运行
 
-直接在浏览器中打开 `index.html` 文件即可使用。
+### 开发模式
+
+使用 Vite 开发服务器运行应用：
+
+```bash
+npm install
+npm run dev
+```
+
+应用将在 http://localhost:5173/ 启动。
+
+### 生产构建
+
+构建生产版本：
+
+```bash
+npm run build
+```
+
+预览生产构建：
+
+```bash
+npm run preview
+```
+
+### Vibe Kanban Web Companion
+
+本项目已集成 [Vibe Kanban Web Companion](https://vibekanban.com)，在开发模式下提供点击编辑功能。该组件仅在开发环境中渲染，不会影响生产构建。
 
 ## 浏览器兼容性
 
