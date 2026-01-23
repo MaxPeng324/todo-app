@@ -185,14 +185,19 @@ li {
   margin-bottom: 12px;
   border-radius: 12px;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: column;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.8);
   transition: all 0.2s ease;
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.todo-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 @keyframes slideIn {
@@ -259,6 +264,43 @@ li.hidden {
 
 li:hover .todo-time {
   opacity: 0.9;
+}
+
+.todo-meta {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.todo-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.todo-time::before {
+  content: "📅";
+  font-size: 10px;
+}
+
+.completed-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.completed-time::before {
+  content: "✅";
+  font-size: 10px;
+  font-style: normal;
 }
 
 .todo-buttons {
@@ -344,8 +386,8 @@ li.editing {
 }
 
 li.editing .todo-content,
-li.editing .todo-time,
-li.editing .todo-buttons {
+li.editing .todo-buttons,
+li.editing .todo-meta {
   display: none;
 }
 
