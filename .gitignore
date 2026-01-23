@@ -11,3 +11,13 @@ testsprite_tests/
 .worktrees/
 .security-key
 logs/security/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
+npm-debug.log*

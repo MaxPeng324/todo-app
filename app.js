@@ -90,6 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function createTodoElement(text, completed = false, completedTime = null, createdAt = null) {
     const li = document.createElement("li");
     li.dataset.taskText = text;
+    if (createdAt) {
+      li.dataset.createdAt = createdAt;
+    }
     if (completed) {
       li.classList.add("completed");
     }
@@ -109,6 +112,14 @@ document.addEventListener("DOMContentLoaded", () => {
     contentDiv.className = "todo-content";
     contentDiv.textContent = text;
     rowDiv.appendChild(contentDiv);
+
+    // 创建创建时间显示
+    if (createdAt) {
+      const timeDiv = document.createElement("div");
+      timeDiv.className = "todo-time";
+      timeDiv.textContent = formatTime(createdAt);
+      li.appendChild(timeDiv);
+    }
 
     // 创建编辑输入框（隐藏状态）
     const editInput = document.createElement("input");
