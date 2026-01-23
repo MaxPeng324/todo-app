@@ -223,6 +223,10 @@ li.completed .todo-content {
   opacity: 0.7;
 }
 
+li.completed .todo-time {
+  opacity: 0.5;
+}
+
 li.hidden {
   display: none;
 }
@@ -236,13 +240,41 @@ li.hidden {
   font-weight: 500;
 }
 
-.completed-time {
-  font-size: 12px;
+.todo-meta {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.todo-time {
+  font-size: 11px;
   color: var(--text-muted);
-  margin-top: 6px;
-  padding-left: 0;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.todo-time::before {
+  content: "📅";
+  font-size: 10px;
+}
+
+.completed-time {
+  font-size: 11px;
+  color: var(--text-muted);
   font-style: italic;
   opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.completed-time::before {
+  content: "✅";
+  font-size: 10px;
+  font-style: normal;
 }
 
 .todo-buttons {
@@ -327,7 +359,7 @@ li.editing {
 
 li.editing .todo-content,
 li.editing .todo-buttons,
-li.editing .completed-time {
+li.editing .todo-meta {
   display: none;
 }
 

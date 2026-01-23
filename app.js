@@ -24,6 +24,22 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentFilter = "all";
 
   /**
+   * 格式化时间显示
+   * @function formatTime
+   * @param {string} isoString - ISO格式的时间字符串
+   * @returns {string} 格式化后的时间字符串
+   */
+  function formatTime(isoString) {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }
+
+  /**
    * 格式化完成时间为易读的字符串。
    * @function formatCompletedTime
    * @param {number} timestamp - 时间戳（毫秒）
@@ -53,7 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    createTodoElement(todoText, false);
+    const createdAt = new Date().toISOString();
+    createTodoElement(todoText, false, null, createdAt);
     todoInput.value = "";
     saveTodos();
     updateTaskCounter();
@@ -67,9 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {string} text - 待办事项的具体显示文本
    * @param {boolean} [completed=false] - 初始状态是否为已完成
    * @param {number|null} [completedTime=null] - 任务完成时间戳
+   * @param {string|null} [createdAt=null] - 任务创建时间（ISO格式）
    * @returns {void}
    */
-  function createTodoElement(text, completed = false, completedTime = null) {
+  function createTodoElement(text, completed = false, completedTime = null, createdAt = null) {
     const li = document.createElement("li");
     li.dataset.taskText = text;
     if (completed) {
@@ -77,6 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (completedTime) {
       li.dataset.completedTime = completedTime;
+    }
+    if (createdAt) {
+      li.dataset.createdAt = createdAt;
     }
 
     // 创建主行容器
@@ -150,13 +171,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     li.appendChild(rowDiv);
 
+    // 创建时间信息容器
+    const metaDiv = document.createElement("div");
+    metaDiv.className = "todo-meta";
+
+    // 创建创建时间显示
+    if (createdAt) {
+      const createdAtDiv = document.createElement("div");
+      createdAtDiv.className = "todo-time";
+      createdAtDiv.textContent = formatTime(createdAt);
+      metaDiv.appendChild(createdAtDiv);
+    }
+
     // 创建完成时间显示区域
     const timeDiv = document.createElement("div");
     timeDiv.className = "completed-time";
     if (completed && completedTime) {
       timeDiv.textContent = formatCompletedTime(completedTime);
+      timeDiv.style.display = "block";
+    } else {
+      timeDiv.style.display = "none";
     }
-    li.appendChild(timeDiv);
+    metaDiv.appendChild(timeDiv);
+
+    li.appendChild(metaDiv);
 
     // 点击切换完成状态（不在编辑模式时）
     contentDiv.addEventListener("click", () => {
@@ -169,10 +207,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const now = Date.now();
           li.dataset.completedTime = now;
           timeDiv.textContent = formatCompletedTime(now);
+          timeDiv.style.display = "block";
         } else if (wasCompleted && !li.classList.contains("completed")) {
           // 如果从完成变为未完成，清除完成时间
           delete li.dataset.completedTime;
           timeDiv.textContent = "";
+          timeDiv.style.display = "none";
         }
 
         saveTodos();
@@ -272,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * 将当前列表中的所有待办事项序列化并持久化到本地存储（localStorage）。
-   * 存储的数据格式为对象数组：[{text: string, completed: boolean, completedTime: number|null}]。
+   * 存储的数据格式为对象数组：[{text: string, completed: boolean, completedTime: number|null, createdAt: string|null}]。
    * @function saveTodos
    * @returns {void}
    */
@@ -283,7 +323,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const taskText = item.dataset.taskText;
       const isCompleted = item.classList.contains("completed");
       const completedTime = item.dataset.completedTime ? parseInt(item.dataset.completedTime) : null;
-      todos.push({ text: taskText, completed: isCompleted, completedTime: completedTime });
+      const createdAt = item.dataset.createdAt || null;
+      todos.push({ text: taskText, completed: isCompleted, completedTime: completedTime, createdAt: createdAt });
     });
     localStorage.setItem("todos", JSON.stringify(todos));
   }
@@ -299,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
     todoList.innerHTML = "";
 
     savedTodos.forEach((taskObject) => {
-      createTodoElement(taskObject.text, taskObject.completed, taskObject.completedTime);
+      createTodoElement(taskObject.text, taskObject.completed, taskObject.completedTime, taskObject.createdAt);
     });
 
     updateTaskCounter();
