@@ -99,9 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (completedTime) {
       li.dataset.completedTime = completedTime;
     }
-    if (createdAt) {
-      li.dataset.createdAt = createdAt;
-    }
 
     // 创建主行容器
     const rowDiv = document.createElement("div");
@@ -112,14 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
     contentDiv.className = "todo-content";
     contentDiv.textContent = text;
     rowDiv.appendChild(contentDiv);
-
-    // 创建创建时间显示
-    if (createdAt) {
-      const timeDiv = document.createElement("div");
-      timeDiv.className = "todo-time";
-      timeDiv.textContent = formatTime(createdAt);
-      li.appendChild(timeDiv);
-    }
 
     // 创建编辑输入框（隐藏状态）
     const editInput = document.createElement("input");

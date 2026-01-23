@@ -273,15 +273,6 @@ li:hover .todo-time {
   gap: 4px;
 }
 
-.todo-time {
-  font-size: 11px;
-  color: var(--text-muted);
-  opacity: 0.7;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .todo-time::before {
   content: "📅";
   font-size: 10px;
