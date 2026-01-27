@@ -2,15 +2,18 @@
  * @Author: Mx.Peng
  * @Date: 2025-08-26 13:58:10
  * @LastEditors: Mx.Peng
- * @LastEditTime: 2026-01-11 09:30:00
- * @Description: Enhanced TodoList with filter, edit, and counter functionality
+ * @LastEditTime: 2026-01-27 14:53:00
+ * @Description: Enhanced TodoList with filter, edit, and counter functionality, now connected to backend API
  */
 
 /**
  * @file app.js
  * @description Enhanced to-do list application with filtering, editing, task counter,
- * and improved user experience with animations.
+ * and improved user experience with animations. Now connects to backend API.
  */
+
+// API base URL - change this to match your backend server
+const API_BASE_URL = 'http://localhost:5000/api';
 
 document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
@@ -57,12 +60,127 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
+   * 从后端API获取所有待办事项
+   * @function loadTodos
+   * @returns {Promise<void>}
+   */
+  async function loadTodos() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/todos`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const todos = await response.json();
+
+      // 清空当前列表
+      todoList.innerHTML = "";
+
+      // 重建任务列表
+      todos.forEach((taskObject) => {
+        createTodoElement(
+          taskObject.title, 
+          taskObject.completed, 
+          taskObject.completed ? new Date(taskObject.created_at).getTime() : null, 
+          taskObject.created_at
+        );
+      });
+
+      updateTaskCounter();
+      applyFilter();
+    } catch (error) {
+      console.error('Error loading todos:', error);
+      alert('加载待办事项失败，请检查后端服务是否正常运行');
+    }
+  }
+
+  /**
+   * 保存待办事项到后端API
+   * @function saveTodo
+   * @param {Object} todoData - 待办事项数据
+   * @returns {Promise<Object>} 保存后的待办事项对象
+   */
+  async function saveTodo(todoData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/todos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(todoData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving todo:', error);
+      alert('保存待办事项失败');
+      throw error;
+    }
+  }
+
+  /**
+   * 更新待办事项到后端API
+   * @function updateTodo
+   * @param {number} id - 待办事项ID
+   * @param {Object} todoData - 待办事项数据
+   * @returns {Promise<Object>} 更新后的待办事项对象
+   */
+  async function updateTodo(id, todoData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(todoData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      alert('更新待办事项失败');
+      throw error;
+    }
+  }
+
+  /**
+   * 从后端API删除待办事项
+   * @function deleteTodo
+   * @param {number} id - 待办事项ID
+   * @returns {Promise<Object>} 删除操作的结果
+   */
+  async function deleteTodo(id) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      alert('删除待办事项失败');
+      throw error;
+    }
+  }
+
+  /**
    * 从输入框获取文本并添加新的待办事项。
-   * 包含空值检查、DOM创建调用、本地存储同步和UI更新。
+   * 包含空值检查、DOM创建调用、后端同步和UI更新。
    * @function addTodo
    * @returns {void}
    */
-  function addTodo() {
+  async function addTodo() {
     const todoText = todoInput.value.trim();
     if (todoText === "") {
       alert("请输入待办事项");
@@ -70,11 +188,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const createdAt = new Date().toISOString();
-    createTodoElement(todoText, false, null, createdAt);
-    todoInput.value = "";
-    saveTodos();
-    updateTaskCounter();
-    applyFilter();
+    
+    try {
+      // 先保存到后端
+      const newTodo = await saveTodo({
+        title: todoText,
+        description: ''
+      });
+      
+      // 成功后更新UI
+      createTodoElement(todoText, false, null, newTodo.created_at);
+      todoInput.value = "";
+      updateTaskCounter();
+      applyFilter();
+    } catch (error) {
+      console.error('Failed to add todo:', error);
+    }
   }
 
   /**
@@ -134,12 +263,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // 删除按钮
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "删除";
-    deleteButton.addEventListener("click", (e) => {
+    deleteButton.addEventListener("click", async (e) => {
       e.stopPropagation();
-      li.remove();
-      saveTodos();
-      updateTaskCounter();
-      applyFilter();
+      
+      // 从后端删除
+      try {
+        // 获取待删除项的ID（这里需要一种方法来标识后端的ID）
+        const todoId = li.dataset.todoId;
+        if (todoId) {
+          await deleteTodo(parseInt(todoId));
+        }
+        
+        // 从UI中移除
+        li.remove();
+        updateTaskCounter();
+        applyFilter();
+      } catch (error) {
+        console.error('Failed to delete todo:', error);
+      }
     });
     buttonsDiv.appendChild(deleteButton);
 
@@ -152,9 +293,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const saveButton = document.createElement("button");
     saveButton.textContent = "保存";
     saveButton.className = "save-btn";
-    saveButton.addEventListener("click", (e) => {
+    saveButton.addEventListener("click", async (e) => {
       e.stopPropagation();
-      saveEdit(li, editInput, contentDiv);
+      await saveEdit(li, editInput, contentDiv);
     });
     editActionsDiv.appendChild(saveButton);
 
@@ -197,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
     li.appendChild(metaDiv);
 
     // 点击切换完成状态（不在编辑模式时）
-    contentDiv.addEventListener("click", () => {
+    contentDiv.addEventListener("click", async () => {
       if (!li.classList.contains("editing")) {
         const wasCompleted = li.classList.contains("completed");
         li.classList.toggle("completed");
@@ -215,7 +356,22 @@ document.addEventListener("DOMContentLoaded", () => {
           timeDiv.style.display = "none";
         }
 
-        saveTodos();
+        // 更新后端数据
+        try {
+          const todoId = li.dataset.todoId;
+          if (todoId) {
+            await updateTodo(parseInt(todoId), {
+              title: li.dataset.taskText,
+              description: '',
+              completed: li.classList.contains("completed")
+            });
+          }
+        } catch (error) {
+          console.error('Failed to update todo completion status:', error);
+          // 如果更新失败，回滚UI状态
+          li.classList.toggle("completed");
+        }
+
         updateTaskCounter();
         applyFilter();
       }
@@ -245,20 +401,35 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {HTMLElement} li - 目标列表项元素
    * @param {HTMLInputElement} editInput - 编辑输入框元素
    * @param {HTMLElement} contentDiv - 显示任务内容的容器元素
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  function saveEdit(li, editInput, contentDiv) {
+  async function saveEdit(li, editInput, contentDiv) {
     const newText = editInput.value.trim();
     if (newText === "") {
       alert("待办事项不能为空");
       return;
     }
 
-    li.dataset.taskText = newText;
-    contentDiv.textContent = newText;
-    editInput.value = newText;
-    li.classList.remove("editing");
-    saveTodos();
+    try {
+      // 更新后端数据
+      const todoId = li.dataset.todoId;
+      if (todoId) {
+        const updatedTodo = await updateTodo(parseInt(todoId), {
+          title: newText,
+          description: '',
+          completed: li.classList.contains("completed")
+        });
+
+        // 成功后更新UI
+        li.dataset.taskText = newText;
+        contentDiv.textContent = newText;
+        editInput.value = newText;
+        li.classList.remove("editing");
+        updateTaskCounter();
+      }
+    } catch (error) {
+      console.error('Failed to update todo:', error);
+    }
   }
 
   /**
@@ -311,68 +482,46 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 将当前列表中的所有待办事项序列化并持久化到本地存储（localStorage）。
-   * 存储的数据格式为对象数组：[{text: string, completed: boolean, completedTime: number|null, createdAt: string|null}]。
-   * @function saveTodos
-   * @returns {void}
-   */
-  function saveTodos() {
-    const taskItems = todoList.querySelectorAll("li");
-    const todos = [];
-    taskItems.forEach((item) => {
-      const taskText = item.dataset.taskText;
-      const isCompleted = item.classList.contains("completed");
-      const completedTime = item.dataset.completedTime ? parseInt(item.dataset.completedTime) : null;
-      const createdAt = item.dataset.createdAt || null;
-      todos.push({ text: taskText, completed: isCompleted, completedTime: completedTime, createdAt: createdAt });
-    });
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }
-
-  /**
-   * 从本地存储（localStorage）读取并解析已保存的任务数据。
-   * 首次加载时重建任务 DOM 树并同步更新计数器与过滤器。
-   * @function loadTodos
-   * @returns {void}
-   */
-  function loadTodos() {
-    const savedTodos = JSON.parse(localStorage.getItem("todos")) || [];
-    todoList.innerHTML = "";
-
-    savedTodos.forEach((taskObject) => {
-      createTodoElement(taskObject.text, taskObject.completed, taskObject.completedTime, taskObject.createdAt);
-    });
-
-    updateTaskCounter();
-    applyFilter();
-  }
-
-  /**
    * 清空所有待办事项列表。
-   * 包含操作确认提示，并在清除后同步移除本地存储数据及更新 UI。
+   * 包含操作确认提示，并在清除后同步移除后端数据及更新 UI。
    * @function clearAllTodos
    * @returns {void}
    */
-  function clearAllTodos() {
+  async function clearAllTodos() {
     if (todoList.children.length === 0) {
       alert("当前没有任务需要清除");
       return;
     }
 
     if (confirm("确定要清除所有待办事项吗？")) {
-      todoList.innerHTML = "";
-      localStorage.removeItem("todos");
-      updateTaskCounter();
+      // 从后端清空所有任务
+      const allTaskElements = Array.from(todoList.querySelectorAll("li"));
+      const deletePromises = allTaskElements.map(async (taskElement) => {
+        const todoId = taskElement.dataset.todoId;
+        if (todoId) {
+          return deleteTodo(parseInt(todoId));
+        }
+      });
+
+      try {
+        await Promise.all(deletePromises);
+        // 成功后清空UI
+        todoList.innerHTML = "";
+        updateTaskCounter();
+      } catch (error) {
+        console.error('Failed to clear all todos:', error);
+        alert('清空待办事项失败');
+      }
     }
   }
 
   /**
    * 仅删除状态为已完成的任务项。
-   * 包含操作确认提示，删除后同步更新本地存储并重新应用当前过滤器。
+   * 包含操作确认提示，删除后同步更新后端并重新应用当前过滤器。
    * @function clearCompletedTodos
    * @returns {void}
    */
-  function clearCompletedTodos() {
+  async function clearCompletedTodos() {
     const completedTasks = todoList.querySelectorAll("li.completed");
 
     if (completedTasks.length === 0) {
@@ -381,10 +530,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (confirm(`确定要清除 ${completedTasks.length} 个已完成的待办事项吗？`)) {
-      completedTasks.forEach((task) => task.remove());
-      saveTodos();
-      updateTaskCounter();
-      applyFilter();
+      // 从后端删除所有已完成的任务
+      const deletePromises = Array.from(completedTasks).map(async (taskElement) => {
+        const todoId = taskElement.dataset.todoId;
+        if (todoId) {
+          return deleteTodo(parseInt(todoId));
+        }
+      });
+
+      try {
+        await Promise.all(deletePromises);
+        // 成功后从UI中移除
+        completedTasks.forEach(task => task.remove());
+        updateTaskCounter();
+        applyFilter();
+      } catch (error) {
+        console.error('Failed to clear completed todos:', error);
+        alert('清空已完成待办事项失败');
+      }
     }
   }
 
